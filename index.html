@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="shortcut icon" href="/asset/favicon.png" type="image/png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FriendChat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <section id="authScreen" class="auth-screen">
+      <div class="auth-card">
+        <div class="logo">💬</div>
+        <h1>FriendChat</h1>
+        <p class="muted">One private group for everyone you invite.</p>
+
+        <div class="tabs">
+          <button id="loginTab" class="active">Login</button>
+          <button id="signupTab">Create account</button>
+        </div>
+
+        <form id="authForm">
+          <label>Email</label>
+          <input id="email" type="email" placeholder="you@example.com" required />
+          <label>Password</label>
+          <input id="password" type="password" placeholder="••••••••" minlength="6" required />
+          <div id="nameWrap">
+            <label>Display name</label>
+            <input id="displayName" type="text" placeholder="Your name" maxlength="30" />
+          </div>
+          <button class="primary" type="submit" id="authButton">Login</button>
+          <p id="authMessage" class="message"></p>
+        </form>
+      </div>
+    </section>
+
+    <section id="chatScreen" class="chat-screen hidden">
+      <header class="topbar">
+        <div>
+          <h2>Friend Chat</h2>
+          <span id="onlineText">Friends group</span>
+        </div>
+        <div class="header-actions">
+          <div class="me">
+            <button type="button" id="avatarWrap" class="avatar-wrap" title="Change profile picture">
+              <img id="myAvatarImg" class="avatar-img hidden" alt="Your profile picture" />
+              <div id="myAvatarInitial" class="avatar">?</div>
+            </button>
+            <input type="file" id="avatarInput" accept="image/*" hidden />
+            <span id="currentUser"></span>
+          </div>
+          <button id="logoutBtn" class="ghost">Logout</button>
+        </div>
+      </header>
+
+      <main class="chat-layout">
+        <aside class="members">
+          <div class="members-title">
+            <strong>Members</strong>
+            <span id="memberCount">0</span>
+          </div>
+          <div id="memberList"></div>
+        </aside>
+
+        <section class="conversation">
+          <div id="messages" class="messages">
+            <div class="empty">No messages yet. Say hello 👋</div>
+          </div>
+
+          <div id="recordingBar" class="recording-bar hidden">
+            <span class="rec-dot"></span>
+            <span id="recordingTimer">0:00</span>
+            <span class="rec-label">Recording voice note…</span>
+            <button type="button" id="cancelRecordingBtn" class="ghost small">Cancel</button>
+            <button type="button" id="stopRecordingBtn" class="primary small">Send</button>
+          </div>
+
+          <form id="messageForm" class="composer">
+            <input type="file" id="mediaInput" accept="image/*,video/*" hidden />
+            <button type="button" id="mediaBtn" class="icon-btn" title="Send photo or video">📎</button>
+            <button type="button" id="voiceBtn" class="icon-btn" title="Record a voice note">🎙️</button>
+            <input id="messageInput" type="text" maxlength="2000" autocomplete="off"
+                   placeholder="Write a message..." required />
+            <button type="submit" class="send">Send</button>
+          </form>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <div id="callOverlay" class="call-overlay hidden">
+    <div class="call-panel">
+      <div id="callAvatarWrap" class="call-avatar-wrap">
+        <img id="callPeerAvatarImg" class="call-peer-avatar-img hidden" alt="" />
+        <div id="callPeerAvatarInitial" class="call-peer-avatar-initial">?</div>
+      </div>
+      <div id="callPeerName" class="call-peer-name">Friend</div>
+      <div id="callStatusText" class="call-status-text">Calling…</div>
+
+      <div id="callVideos" class="call-videos hidden">
+        <video id="remoteVideo" class="remote-video" autoplay playsinline></video>
+        <video id="localVideo" class="local-video" autoplay playsinline muted></video>
+      </div>
+      <audio id="remoteAudio" autoplay></audio>
+
+      <div class="call-controls">
+        <button type="button" id="toggleMicBtn" class="call-btn" title="Mute/unmute">🎙️</button>
+        <button type="button" id="toggleCameraBtn" class="call-btn hidden" title="Camera on/off">📷</button>
+        <button type="button" id="declineCallBtn" class="call-btn danger hidden" title="Decline">✖</button>
+        <button type="button" id="acceptCallBtn" class="call-btn accept hidden" title="Accept">✔</button>
+        <button type="button" id="hangupCallBtn" class="call-btn danger hidden" title="Hang up">📵</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
