@@ -22,6 +22,10 @@ const messageForm = document.querySelector("#messageForm");
 const messageInput = document.querySelector("#messageInput");
 const memberList = document.querySelector("#memberList");
 const memberCount = document.querySelector("#memberCount");
+const membersPanel = document.querySelector("#membersPanel");
+const membersBackdrop = document.querySelector("#membersBackdrop");
+const membersToggleBtn = document.querySelector("#membersToggleBtn");
+const membersCloseBtn = document.querySelector("#membersCloseBtn");
 const currentUserLabel = document.querySelector("#currentUser");
 
 const mediaInput = document.querySelector("#mediaInput");
@@ -39,6 +43,8 @@ const myAvatarImg = document.querySelector("#myAvatarImg");
 const myAvatarInitial = document.querySelector("#myAvatarInitial");
 
 const callOverlay = document.querySelector("#callOverlay");
+const callBackdrop = document.querySelector("#callBackdrop");
+const callCenter = document.querySelector("#callCenter");
 const callPeerAvatarImg = document.querySelector("#callPeerAvatarImg");
 const callPeerAvatarInitial = document.querySelector("#callPeerAvatarInitial");
 const callPeerName = document.querySelector("#callPeerName");
@@ -48,7 +54,9 @@ const remoteVideo = document.querySelector("#remoteVideo");
 const localVideo = document.querySelector("#localVideo");
 const remoteAudio = document.querySelector("#remoteAudio");
 const toggleMicBtn = document.querySelector("#toggleMicBtn");
+const micIcon = document.querySelector("#micIcon");
 const toggleCameraBtn = document.querySelector("#toggleCameraBtn");
+const cameraIcon = document.querySelector("#cameraIcon");
 const acceptCallBtn = document.querySelector("#acceptCallBtn");
 const declineCallBtn = document.querySelector("#declineCallBtn");
 const hangupCallBtn = document.querySelector("#hangupCallBtn");
@@ -345,6 +353,22 @@ function renderMessage(m) {
     </div>
   `;
   messagesEl.appendChild(row);
+  attachMediaFallback(row, m);
+}
+
+function attachMediaFallback(row, m) {
+  if (!m.media_url) return;
+  const el = row.querySelector(".chat-media-image, .chat-media-video, .chat-media-audio");
+  if (!el) return;
+  el.addEventListener("error", () => {
+    const fallback = document.createElement("a");
+    fallback.href = m.media_url;
+    fallback.target = "_blank";
+    fallback.rel = "noopener";
+    fallback.className = "media-fallback";
+    fallback.textContent = "⚠️ Couldn't load this attachment — tap to open it directly";
+    el.replaceWith(fallback);
+  }, { once: true });
 }
 
 function mediaHTML(message) {
@@ -573,8 +597,21 @@ memberList.addEventListener("click", (e) => {
   const peerName = row.dataset.name;
   const peerAvatar = row.dataset.avatar || null;
   const callType = btn.dataset.callType === "video" ? "video" : "audio";
+  closeMembersPanel();
   startCall(peerId, peerName, peerAvatar, callType);
 });
+
+function openMembersPanel() {
+  membersPanel.classList.add("open");
+  membersBackdrop.classList.remove("hidden");
+}
+function closeMembersPanel() {
+  membersPanel.classList.remove("open");
+  membersBackdrop.classList.add("hidden");
+}
+membersToggleBtn.addEventListener("click", openMembersPanel);
+membersCloseBtn.addEventListener("click", closeMembersPanel);
+membersBackdrop.addEventListener("click", closeMembersPanel);
 
 async function startCall(peerId, peerName, peerAvatar, callType) {
   if (!user || peerId === user.id) return;
@@ -822,24 +859,31 @@ function updateCallUI() {
 
   callOverlay.classList.remove("hidden");
   callPeerName.textContent = activeCall.peerName || "Friend";
+
   if (activeCall.peerAvatar) {
     callPeerAvatarImg.src = activeCall.peerAvatar;
     callPeerAvatarImg.classList.remove("hidden");
     callPeerAvatarInitial.classList.add("hidden");
+    callBackdrop.style.backgroundImage = `url("${activeCall.peerAvatar}")`;
   } else {
     callPeerAvatarImg.classList.add("hidden");
     callPeerAvatarInitial.classList.remove("hidden");
     callPeerAvatarInitial.textContent = (activeCall.peerName?.[0] || "?").toUpperCase();
+    callBackdrop.style.backgroundImage = "none";
   }
 
   const isVideo = activeCall.type === "video";
-  callVideos.classList.toggle("hidden", !(isVideo && activeCall.localStream));
-  toggleCameraBtn.classList.toggle("hidden", !isVideo || activeCall.status === "ringing-in");
+  const showVideo = isVideo && !!activeCall.localStream;
+  callVideos.classList.toggle("hidden", !showVideo);
+  callCenter.classList.toggle("hidden", showVideo);
+  callCenter.classList.toggle("ringing", ["ringing-in", "ringing-out", "connecting"].includes(activeCall.status));
 
-  acceptCallBtn.classList.toggle("hidden", activeCall.status !== "ringing-in");
-  declineCallBtn.classList.toggle("hidden", activeCall.status !== "ringing-in");
-  hangupCallBtn.classList.toggle("hidden", activeCall.status === "ringing-in");
-  toggleMicBtn.classList.toggle("hidden", activeCall.status === "ringing-in");
+  const isRinging = activeCall.status === "ringing-in";
+  acceptCallBtn.classList.toggle("hidden", !isRinging);
+  declineCallBtn.classList.toggle("hidden", !isRinging);
+  hangupCallBtn.classList.toggle("hidden", isRinging);
+  toggleMicBtn.classList.toggle("hidden", isRinging);
+  toggleCameraBtn.classList.toggle("hidden", isRinging || !isVideo);
 
   const labels = {
     "ringing-in": isVideo ? "Incoming video call…" : "Incoming voice call…",
@@ -853,16 +897,20 @@ function updateCallUI() {
 
 function updateCallControlsUI() {
   const micTrack = activeCall?.localStream?.getAudioTracks()[0];
-  toggleMicBtn.textContent = micTrack && !micTrack.enabled ? "🔇" : "🎙️";
-  toggleMicBtn.classList.toggle("muted", !!(micTrack && !micTrack.enabled));
+  const micOff = !!(micTrack && !micTrack.enabled);
+  micIcon.textContent = micOff ? "🔇" : "🎙️";
+  toggleMicBtn.classList.toggle("muted", micOff);
 
   const camTrack = activeCall?.localStream?.getVideoTracks()[0];
-  toggleCameraBtn.textContent = camTrack && !camTrack.enabled ? "🚫" : "📷";
-  toggleCameraBtn.classList.toggle("muted", !!(camTrack && !camTrack.enabled));
+  const camOff = !!(camTrack && !camTrack.enabled);
+  cameraIcon.textContent = camOff ? "🚫" : "📷";
+  toggleCameraBtn.classList.toggle("muted", camOff);
 }
 
 function hideCallUI() {
   callOverlay.classList.add("hidden");
+  callCenter.classList.remove("ringing");
+  callBackdrop.style.backgroundImage = "none";
   remoteVideo.srcObject = null;
   localVideo.srcObject = null;
   remoteAudio.srcObject = null;

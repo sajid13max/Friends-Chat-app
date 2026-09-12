@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="shortcut icon" href="/asset/favicon.png" type="image/png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FriendChat</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#171717" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
 </head>
 <body>
   <div id="app">
@@ -37,9 +40,12 @@
 
     <section id="chatScreen" class="chat-screen hidden">
       <header class="topbar">
-        <div>
-          <h2>Friend Chat</h2>
-          <span id="onlineText">Friends group</span>
+        <div class="topbar-left">
+          <button type="button" id="membersToggleBtn" class="ghost members-toggle" title="Members">👥</button>
+          <div>
+            <h2>Friend Chat</h2>
+            <span id="onlineText">Friends group</span>
+          </div>
         </div>
         <div class="header-actions">
           <div class="me">
@@ -54,11 +60,14 @@
         </div>
       </header>
 
+      <div id="membersBackdrop" class="members-backdrop hidden"></div>
+
       <main class="chat-layout">
-        <aside class="members">
+        <aside class="members" id="membersPanel">
           <div class="members-title">
             <strong>Members</strong>
             <span id="memberCount">0</span>
+            <button type="button" id="membersCloseBtn" class="ghost small members-close">✕</button>
           </div>
           <div id="memberList"></div>
         </aside>
@@ -90,30 +99,53 @@
   </div>
 
   <div id="callOverlay" class="call-overlay hidden">
-    <div class="call-panel">
+    <div id="callBackdrop" class="call-backdrop"></div>
+
+    <div class="call-topbar">
+      <div id="callPeerName" class="call-topbar-name">Friend</div>
+      <div id="callStatusText" class="call-topbar-status">Calling…</div>
+    </div>
+
+    <div id="callVideos" class="call-videos hidden">
+      <video id="remoteVideo" class="remote-video" autoplay playsinline></video>
+      <video id="localVideo" class="local-video" autoplay playsinline muted></video>
+    </div>
+    <audio id="remoteAudio" autoplay></audio>
+
+    <div id="callCenter" class="call-center">
+      <div class="ring-pulse"></div>
+      <div class="ring-pulse delay"></div>
       <div id="callAvatarWrap" class="call-avatar-wrap">
         <img id="callPeerAvatarImg" class="call-peer-avatar-img hidden" alt="" />
         <div id="callPeerAvatarInitial" class="call-peer-avatar-initial">?</div>
       </div>
-      <div id="callPeerName" class="call-peer-name">Friend</div>
-      <div id="callStatusText" class="call-status-text">Calling…</div>
+    </div>
 
-      <div id="callVideos" class="call-videos hidden">
-        <video id="remoteVideo" class="remote-video" autoplay playsinline></video>
-        <video id="localVideo" class="local-video" autoplay playsinline muted></video>
-      </div>
-      <audio id="remoteAudio" autoplay></audio>
+    <div class="call-controls-bar">
+      <button type="button" id="toggleMicBtn" class="call-btn secondary" title="Mute/unmute">
+        <span id="micIcon" class="call-btn-icon">🎙️</span>
+        <span class="call-btn-label">Mute</span>
+      </button>
+      <button type="button" id="hangupCallBtn" class="call-btn danger hidden" title="Hang up">📵</button>
+      <button type="button" id="toggleCameraBtn" class="call-btn secondary hidden" title="Camera on/off">
+        <span id="cameraIcon" class="call-btn-icon">📷</span>
+        <span class="call-btn-label">Camera</span>
+      </button>
+    </div>
 
-      <div class="call-controls">
-        <button type="button" id="toggleMicBtn" class="call-btn" title="Mute/unmute">🎙️</button>
-        <button type="button" id="toggleCameraBtn" class="call-btn hidden" title="Camera on/off">📷</button>
-        <button type="button" id="declineCallBtn" class="call-btn danger hidden" title="Decline">✖</button>
-        <button type="button" id="acceptCallBtn" class="call-btn accept hidden" title="Accept">✔</button>
-        <button type="button" id="hangupCallBtn" class="call-btn danger hidden" title="Hang up">📵</button>
-      </div>
+    <div class="incoming-actions">
+      <button type="button" id="declineCallBtn" class="call-btn danger hidden" title="Decline">✖</button>
+      <button type="button" id="acceptCallBtn" class="call-btn accept hidden" title="Accept">📞</button>
     </div>
   </div>
 
   <script type="module" src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(console.error);
+      });
+    }
+  </script>
 </body>
 </html>

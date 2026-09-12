@@ -101,6 +101,40 @@ plain WebRTC:
 - Calling requires microphone/camera permission, which browsers only grant on
   `https://` or `http://localhost` (same restriction as voice notes).
 
+## Installing it as an app (Android/iOS/desktop)
+
+FriendChat is now a installable PWA (Progressive Web App): it has a manifest,
+icons, and a service worker for offline shell caching. Once it's deployed on
+`https://` (not `file://`):
+
+- **Android (Chrome):** open the site → menu (⋮) → **"Install app"** / **"Add
+  to Home screen"**. You get a real home-screen icon and a full-screen window
+  with no browser bar — like a native app, launched from the site with zero
+  extra build step.
+- **iOS (Safari):** Share button → **"Add to Home Screen"**.
+- **Desktop (Chrome/Edge):** an install icon appears in the address bar.
+
+### Getting an actual `.apk` file
+
+A true installable `.apk` needs the Android build toolchain (Gradle/Android
+SDK), which isn't something a website can produce by itself. The standard,
+no-code way to turn this PWA into a real signed `.apk`/`.aab`:
+
+1. Deploy this folder somewhere with HTTPS (Netlify, Vercel, GitHub Pages,
+   etc. all work and are free).
+2. Go to **[pwabuilder.com](https://www.pwabuilder.com)**, paste your live
+   URL, and click **"Package for Stores" → Android**.
+3. It reads `manifest.json` automatically and generates a signed `.apk`/
+   `.aab` you can install directly on a phone or upload to the Play Store.
+
+(Alternative for more control: wrap it with
+[Capacitor](https://capacitorjs.com/) in Android Studio — more setup, but
+gives native APIs if you ever need them beyond what the browser offers.)
+
+**Note:** microphone/camera access (voice notes, calling) and the service
+worker both require `https://` (or `localhost`) — none of this works from a
+`file://` URL or plain `http://`.
+
 ## Important: "me and my friend only"
 
 This version is a **single shared group**: every account that successfully registers can see and send messages in that group.

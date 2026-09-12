@@ -116,13 +116,15 @@ end $$;
 
 -- ---------- Storage: buckets for chat media and profile pictures ----------
 
-insert into storage.buckets (id, name, public)
-values ('chat-media', 'chat-media', true)
-on conflict (id) do nothing;
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('chat-media', 'chat-media', true, 52428800, null)
+on conflict (id) do update
+  set public = true, file_size_limit = 52428800, allowed_mime_types = null;
 
-insert into storage.buckets (id, name, public)
-values ('avatars', 'avatars', true)
-on conflict (id) do nothing;
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 8388608, null)
+on conflict (id) do update
+  set public = true, file_size_limit = 8388608, allowed_mime_types = null;
 
 -- Anyone signed in can view files (buckets are also public, so URLs work directly).
 drop policy if exists "chat-media public read" on storage.objects;
